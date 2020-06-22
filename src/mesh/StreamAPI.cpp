@@ -28,6 +28,10 @@ void StreamAPI::readStream()
         if (ptr == 0) { // looking for START1
             if (c != START1)
                 rxPtr = 0;     // failed to find framing
+            if (c == 0x53) {   // if the first character we read is an S, assume it's a simple plaintext message to send
+                readSimpleMsg();
+                return;
+            }
         } else if (ptr == 1) { // looking for START2
             if (c != START2)
                 rxPtr = 0;                             // failed to find framing
@@ -48,6 +52,34 @@ void StreamAPI::readStream()
             }
         }
     }
+}
+
+void StreamAPI::readSimpleMsg() {
+    int ptr = 0;
+    while (stream->available()) {
+        rxBuf[ptr] = stream->read();
+        ptr++;
+    }
+
+/* ZOMGWTFBBQ :headdesk:
+    MeshPacket p;
+    SubPacket s;
+    Data_payload_t d;
+    PB_BYTES_ARRAY_T(ptr) bArray;
+    ;
+    d->bytes = rxBuf;
+    d.size = ptr;
+    s.data.payload
+    p.which_payload = MeshPacket_decoded_tag;
+    p.decoded
+    pb_decode_from_bytes(rxBuf, ptr, SubPacket_fields, &p.decoded);
+    ToRadio radioScratch;
+    radioScratch.which_variant = ToRadio_packet_tag;
+    radioScratch.variant.packet = p;
+    size_t len = pb_encode_to_bytes(rxBuf, sizeof(rxBuf), ToRadio_fields, &radioScratch);
+    handleToRadio(rxBuf, len);
+*/
+    DEBUG_MSG("SIMPLE SEND:%s", rxBuf);
 }
 
 /**

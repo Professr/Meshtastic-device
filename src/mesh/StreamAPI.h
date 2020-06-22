@@ -58,6 +58,8 @@ class StreamAPI : public PhoneAPI
      */
     void writeStream();
 
+    void readSimpleMsg();
+
   protected:
     /**
      * Send a FromRadio.rebooted = true packet to the phone
